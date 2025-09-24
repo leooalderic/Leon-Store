@@ -37,33 +37,29 @@ abstract class BaseGamePageState<T extends BaseGamePage> extends State<T> {
             // Masukkan Data Akun
             _sectionCard(
               title: "Masukkan Data Akun",
-              child: Row(
+              child: Column(
                 children: [
-                  Expanded(
-                    child: TextField(
-                      decoration: InputDecoration(
-                        labelText: "ID",
-                        hintText: "Masukkan ID",
-                        border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(8),
-                        ),
-                        filled: true,
-                        fillColor: const Color.fromARGB(255, 0, 0, 0),
+                  TextField(
+                    decoration: InputDecoration(
+                      labelText: "ID",
+                      hintText: "Masukkan ID",
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(8),
                       ),
+                      filled: true,
+                      fillColor: const Color.fromARGB(255, 0, 0, 0),
                     ),
                   ),
-                  const SizedBox(width: 12),
-                  Expanded(
-                    child: TextField(
-                      decoration: InputDecoration(
-                        labelText: "Server",
-                        hintText: "Masukkan Server",
-                        border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(8),
-                        ),
-                        filled: true,
-                        fillColor: const Color.fromARGB(255, 0, 0, 0),
+                  const SizedBox(height: 12),
+                  TextField(
+                    decoration: InputDecoration(
+                      labelText: "Server",
+                      hintText: "Masukkan Server",
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(8),
                       ),
+                      filled: true,
+                      fillColor: const Color.fromARGB(255, 0, 0, 0),
                     ),
                   ),
                 ],
@@ -235,31 +231,37 @@ abstract class BaseGamePageState<T extends BaseGamePage> extends State<T> {
           currentTransaction = Transaction(product: product, quantity: quantity);
         });
       },
-      child: Container(
-        width: 150,
-        padding: const EdgeInsets.all(12),
-        decoration: BoxDecoration(
-          color: isSelected ? const Color(0xFFD2A679) : const Color(0xFF3A3A3A),
-          borderRadius: BorderRadius.circular(8),
-        ),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(product.name,
-                style: TextStyle(
-                    color: isSelected ? Colors.black : Colors.white,
-                    fontSize: 14)),
-            const SizedBox(height: 6),
-            Text(
-              CurrencyHelper.formatRupiah(product.price),
-              style: TextStyle(
-                color: isSelected ? Colors.black : const Color(0xFFD2A679),
-                fontSize: 16,
-                fontWeight: FontWeight.bold,
-              ),
+      child: LayoutBuilder(
+        builder: (context, constraints) {
+          final double screenWidth = constraints.maxWidth;
+          final double cardWidth = (screenWidth / 2) - 18;
+          return Container(
+            width: cardWidth,
+            padding: const EdgeInsets.all(12),
+            decoration: BoxDecoration(
+              color: isSelected ? const Color(0xFFD2A679) : const Color(0xFF3A3A3A),
+              borderRadius: BorderRadius.circular(8),
             ),
-          ],
-        ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(product.name,
+                    style: TextStyle(
+                        color: isSelected ? Colors.black : Colors.white,
+                        fontSize: 14)),
+                const SizedBox(height: 6),
+                Text(
+                  CurrencyHelper.formatRupiah(product.price),
+                  style: TextStyle(
+                    color: isSelected ? Colors.black : const Color(0xFFD2A679),
+                    fontSize: 16,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ],
+            ),
+          );
+        }
       ),
     );
   }
