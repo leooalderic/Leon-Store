@@ -14,7 +14,7 @@ class HomePage extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: const Color.fromARGB(255, 30, 30, 30),
-      body: LayoutBuilder(
+      body: LayoutBuilder(  
         builder: (context, constraints) {
           final isMobile = constraints.maxWidth < 600;
           final crossAxisCount = isMobile ? 2 : 3; 

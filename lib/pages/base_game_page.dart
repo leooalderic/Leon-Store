@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:leon_flutter/models/product.dart';
 import 'package:leon_flutter/models/transaction.dart';
 import 'package:leon_flutter/utils/currency_helper.dart';
+import 'package:flutter_rating_bar/flutter_rating_bar.dart';
 
 abstract class BaseGamePage extends StatefulWidget {
   const BaseGamePage({super.key});
@@ -73,8 +74,10 @@ abstract class BaseGamePageState<T extends BaseGamePage> extends State<T> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const Text("Topup Instant",
-                      style: TextStyle(color: Colors.white70, fontSize: 12)),
+                  const Text(
+                    "Topup Instant",
+                    style: TextStyle(color: Colors.white70, fontSize: 12),
+                  ),
                   const SizedBox(height: 12),
                   Wrap(
                     spacing: 12,
@@ -84,8 +87,10 @@ abstract class BaseGamePageState<T extends BaseGamePage> extends State<T> {
                         .toList(),
                   ),
                   const SizedBox(height: 24),
-                  const Text("Diamonds Pass",
-                      style: TextStyle(color: Colors.white70, fontSize: 12)),
+                  const Text(
+                    "Diamonds Pass",
+                    style: TextStyle(color: Colors.white70, fontSize: 12),
+                  ),
                   const SizedBox(height: 12),
                   Wrap(
                     spacing: 12,
@@ -120,8 +125,10 @@ abstract class BaseGamePageState<T extends BaseGamePage> extends State<T> {
                     },
                     icon: const Icon(Icons.remove, color: Colors.white),
                   ),
-                  Text("$quantity",
-                      style: const TextStyle(color: Colors.white, fontSize: 16)),
+                  Text(
+                    "$quantity",
+                    style: const TextStyle(color: Colors.white, fontSize: 16),
+                  ),
                   IconButton(
                     onPressed: () {
                       setState(() {
@@ -147,14 +154,18 @@ abstract class BaseGamePageState<T extends BaseGamePage> extends State<T> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text("Produk: ${currentTransaction?.product.name ?? '-'}",
-                      style: const TextStyle(color: Colors.white70)),
+                  Text(
+                    "Produk: ${currentTransaction?.product.name ?? '-'}",
+                    style: const TextStyle(color: Colors.white70),
+                  ),
                   Text(
                     "Harga: ${CurrencyHelper.formatRupiah(currentTransaction?.product.price ?? 0)}",
                     style: const TextStyle(color: Colors.white70),
                   ),
-                  Text("Jumlah: $quantity",
-                      style: const TextStyle(color: Colors.white70)),
+                  Text(
+                    "Jumlah: $quantity",
+                    style: const TextStyle(color: Colors.white70),
+                  ),
                   const Divider(color: Colors.white24),
                   Text(
                     "Total: ${CurrencyHelper.formatRupiah(total)}",
@@ -169,6 +180,22 @@ abstract class BaseGamePageState<T extends BaseGamePage> extends State<T> {
             ),
             const SizedBox(height: 16),
 
+Center(
+  child: RatingBar.builder(
+    initialRating: 3,
+    minRating: 1,
+    direction: Axis.horizontal,
+    allowHalfRating: true,
+    itemCount: 5,
+    itemPadding: EdgeInsets.symmetric(horizontal: 3.0),
+    itemBuilder: (context, _) => Icon(Icons.star, color: Colors.amber),
+    onRatingUpdate: (rating) {
+      print(rating);
+    },
+  ),
+),
+const SizedBox(height: 24), 
+
             // Tombol Pesan
             SizedBox(
               width: double.infinity,
@@ -177,7 +204,8 @@ abstract class BaseGamePageState<T extends BaseGamePage> extends State<T> {
                   backgroundColor: const Color(0xFFD2A679),
                   padding: const EdgeInsets.symmetric(vertical: 16),
                   shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12)),
+                    borderRadius: BorderRadius.circular(12),
+                  ),
                 ),
                 onPressed: () {
                   ScaffoldMessenger.of(context).showSnackBar(
@@ -185,8 +213,10 @@ abstract class BaseGamePageState<T extends BaseGamePage> extends State<T> {
                   );
                 },
                 icon: const Icon(Icons.shopping_bag, color: Colors.white),
-                label: const Text("Pesan Sekarang!",
-                    style: TextStyle(color: Colors.white)),
+                label: const Text(
+                  "Pesan Sekarang!",
+                  style: TextStyle(color: Colors.white),
+                ),
               ),
             ),
           ],
@@ -212,9 +242,13 @@ abstract class BaseGamePageState<T extends BaseGamePage> extends State<T> {
               color: const Color(0xFFD2A679),
               borderRadius: BorderRadius.circular(4),
             ),
-            child: Text(title,
-                style: const TextStyle(
-                    color: Colors.white, fontWeight: FontWeight.bold)),
+            child: Text(
+              title,
+              style: const TextStyle(
+                color: Colors.white,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
           ),
           const SizedBox(height: 12),
           child,
@@ -228,7 +262,10 @@ abstract class BaseGamePageState<T extends BaseGamePage> extends State<T> {
     return GestureDetector(
       onTap: () {
         setState(() {
-          currentTransaction = Transaction(product: product, quantity: quantity);
+          currentTransaction = Transaction(
+            product: product,
+            quantity: quantity,
+          );
         });
       },
       child: LayoutBuilder(
@@ -239,16 +276,21 @@ abstract class BaseGamePageState<T extends BaseGamePage> extends State<T> {
             width: cardWidth,
             padding: const EdgeInsets.all(12),
             decoration: BoxDecoration(
-              color: isSelected ? const Color(0xFFD2A679) : const Color(0xFF3A3A3A),
+              color: isSelected
+                  ? const Color(0xFFD2A679)
+                  : const Color(0xFF3A3A3A),
               borderRadius: BorderRadius.circular(8),
             ),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(product.name,
-                    style: TextStyle(
-                        color: isSelected ? Colors.black : Colors.white,
-                        fontSize: 14)),
+                Text(
+                  product.name,
+                  style: TextStyle(
+                    color: isSelected ? Colors.black : Colors.white,
+                    fontSize: 14,
+                  ),
+                ),
                 const SizedBox(height: 6),
                 Text(
                   CurrencyHelper.formatRupiah(product.price),
@@ -261,7 +303,7 @@ abstract class BaseGamePageState<T extends BaseGamePage> extends State<T> {
               ],
             ),
           );
-        }
+        },
       ),
     );
   }
