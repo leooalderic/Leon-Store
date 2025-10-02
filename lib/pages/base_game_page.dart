@@ -18,51 +18,39 @@ abstract class BaseGamePage extends StatefulWidget {
 abstract class BaseGamePageState<T extends BaseGamePage> extends State<T> {
   Transaction? currentTransaction;
   int quantity = 1;
+  double rating = 3;
 
   @override
   Widget build(BuildContext context) {
     final total = currentTransaction?.total ?? 0;
 
     return Scaffold(
-      backgroundColor: const Color(0xFF1E1E1E),
+      backgroundColor: const Color(0xFF121212), // lebih gelap
       appBar: AppBar(
         backgroundColor: const Color(0xFF1E1E1E),
         elevation: 0,
-        title: Text(widget.gameTitle),
+        centerTitle: true,
+        title: Text(
+          widget.gameTitle,
+          style: const TextStyle(
+            color: Color(0xFFD2A679),
+            fontWeight: FontWeight.bold,
+          ),
+        ),
       ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(16),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Masukkan Data Akun
+            // Input Akun
             _sectionCard(
-              title: "Masukkan Data Akun",
+              title: "Data Akun",
               child: Column(
                 children: [
-                  TextField(
-                    decoration: InputDecoration(
-                      labelText: "ID",
-                      hintText: "Masukkan ID",
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(8),
-                      ),
-                      filled: true,
-                      fillColor: const Color.fromARGB(255, 0, 0, 0),
-                    ),
-                  ),
+                  _inputField("ID", "Masukkan ID"),
                   const SizedBox(height: 12),
-                  TextField(
-                    decoration: InputDecoration(
-                      labelText: "Server",
-                      hintText: "Masukkan Server",
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(8),
-                      ),
-                      filled: true,
-                      fillColor: const Color.fromARGB(255, 0, 0, 0),
-                    ),
-                  ),
+                  _inputField("Server", "Masukkan Server"),
                 ],
               ),
             ),
@@ -74,31 +62,15 @@ abstract class BaseGamePageState<T extends BaseGamePage> extends State<T> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const Text(
-                    "Topup Instant",
-                    style: TextStyle(color: Colors.white70, fontSize: 12),
-                  ),
+                  const Text("Topup Instant",
+                      style: TextStyle(color: Colors.white70, fontSize: 12)),
                   const SizedBox(height: 12),
-                  Wrap(
-                    spacing: 12,
-                    runSpacing: 12,
-                    children: widget.instantProducts
-                        .map((p) => _productCard(p))
-                        .toList(),
-                  ),
+                  _productGrid(widget.instantProducts),
                   const SizedBox(height: 24),
-                  const Text(
-                    "Diamonds Pass",
-                    style: TextStyle(color: Colors.white70, fontSize: 12),
-                  ),
+                  const Text("Diamonds Pass",
+                      style: TextStyle(color: Colors.white70, fontSize: 12)),
                   const SizedBox(height: 12),
-                  Wrap(
-                    spacing: 12,
-                    runSpacing: 12,
-                    children: widget.passProducts
-                        .map((p) => _productCard(p))
-                        .toList(),
-                  ),
+                  _productGrid(widget.passProducts),
                 ],
               ),
             ),
@@ -106,33 +78,14 @@ abstract class BaseGamePageState<T extends BaseGamePage> extends State<T> {
 
             // Jumlah Pembelian
             _sectionCard(
-              title: "Masukkan Jumlah Pembelian",
+              title: "Jumlah Pembelian",
               child: Row(
+                mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  IconButton(
-                    onPressed: () {
-                      if (quantity > 1) {
-                        setState(() {
-                          quantity--;
-                          if (currentTransaction != null) {
-                            currentTransaction = Transaction(
-                              product: currentTransaction!.product,
-                              quantity: quantity,
-                            );
-                          }
-                        });
-                      }
-                    },
-                    icon: const Icon(Icons.remove, color: Colors.white),
-                  ),
-                  Text(
-                    "$quantity",
-                    style: const TextStyle(color: Colors.white, fontSize: 16),
-                  ),
-                  IconButton(
-                    onPressed: () {
+                  _quantityButton(Icons.remove, () {
+                    if (quantity > 1) {
                       setState(() {
-                        quantity++;
+                        quantity--;
                         if (currentTransaction != null) {
                           currentTransaction = Transaction(
                             product: currentTransaction!.product,
@@ -140,9 +93,27 @@ abstract class BaseGamePageState<T extends BaseGamePage> extends State<T> {
                           );
                         }
                       });
-                    },
-                    icon: const Icon(Icons.add, color: Colors.white),
+                    }
+                  }),
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 16),
+                    child: Text(
+                      "$quantity",
+                      style:
+                          const TextStyle(color: Colors.white, fontSize: 18),
+                    ),
                   ),
+                  _quantityButton(Icons.add, () {
+                    setState(() {
+                      quantity++;
+                      if (currentTransaction != null) {
+                        currentTransaction = Transaction(
+                          product: currentTransaction!.product,
+                          quantity: quantity,
+                        );
+                      }
+                    });
+                  }),
                 ],
               ),
             ),
@@ -154,18 +125,13 @@ abstract class BaseGamePageState<T extends BaseGamePage> extends State<T> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
+                  Text("Produk: ${currentTransaction?.product.name ?? '-'}",
+                      style: const TextStyle(color: Colors.white70)),
                   Text(
-                    "Produk: ${currentTransaction?.product.name ?? '-'}",
-                    style: const TextStyle(color: Colors.white70),
-                  ),
-                  Text(
-                    "Harga: ${CurrencyHelper.formatRupiah(currentTransaction?.product.price ?? 0)}",
-                    style: const TextStyle(color: Colors.white70),
-                  ),
-                  Text(
-                    "Jumlah: $quantity",
-                    style: const TextStyle(color: Colors.white70),
-                  ),
+                      "Harga: ${CurrencyHelper.formatRupiah(currentTransaction?.product.price ?? 0)}",
+                      style: const TextStyle(color: Colors.white70)),
+                  Text("Jumlah: $quantity",
+                      style: const TextStyle(color: Colors.white70)),
                   const Divider(color: Colors.white24),
                   Text(
                     "Total: ${CurrencyHelper.formatRupiah(total)}",
@@ -180,42 +146,46 @@ abstract class BaseGamePageState<T extends BaseGamePage> extends State<T> {
             ),
             const SizedBox(height: 16),
 
-Center(
-  child: RatingBar.builder(
-    initialRating: 3,
-    minRating: 1,
-    direction: Axis.horizontal,
-    allowHalfRating: true,
-    itemCount: 5,
-    itemPadding: EdgeInsets.symmetric(horizontal: 3.0),
-    itemBuilder: (context, _) => Icon(Icons.star, color: Colors.amber),
-    onRatingUpdate: (rating) {
-      print(rating);
-    },
-  ),
-),
-const SizedBox(height: 24), 
+            // Rating
+            _sectionCard(
+              title: "Beri Rating",
+              child: Center(
+                child: RatingBar.builder(
+                  initialRating: rating,
+                  minRating: 1,
+                  allowHalfRating: true,
+                  itemSize: 30,
+                  itemPadding: const EdgeInsets.symmetric(horizontal: 4),
+                  unratedColor: Colors.white24,
+                  itemBuilder: (context, _) =>
+                      const Icon(Icons.star, color: Colors.amber),
+                  onRatingUpdate: (value) {
+                    setState(() => rating = value);
+                  },
+                ),
+              ),
+            ),
+            const SizedBox(height: 24),
 
             // Tombol Pesan
             SizedBox(
               width: double.infinity,
-              child: ElevatedButton.icon(
+              child: ElevatedButton(
                 style: ElevatedButton.styleFrom(
                   backgroundColor: const Color(0xFFD2A679),
                   padding: const EdgeInsets.symmetric(vertical: 16),
                   shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12),
-                  ),
+                      borderRadius: BorderRadius.circular(12)),
                 ),
                 onPressed: () {
                   ScaffoldMessenger.of(context).showSnackBar(
                     const SnackBar(content: Text("Pesanan berhasil dibuat!")),
                   );
                 },
-                icon: const Icon(Icons.shopping_bag, color: Colors.white),
-                label: const Text(
+                child: const Text(
                   "Pesan Sekarang!",
-                  style: TextStyle(color: Colors.white),
+                  style: TextStyle(
+                      color: Colors.white, fontWeight: FontWeight.bold),
                 ),
               ),
             ),
@@ -230,26 +200,20 @@ const SizedBox(height: 24),
       margin: const EdgeInsets.only(bottom: 12),
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: const Color(0xFF2C2C2C),
+        color: const Color(0xFF1E1E1E),
         borderRadius: BorderRadius.circular(12),
+        boxShadow: const [
+          BoxShadow(color: Colors.black26, blurRadius: 4, offset: Offset(0, 2))
+        ],
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-            decoration: BoxDecoration(
-              color: const Color(0xFFD2A679),
-              borderRadius: BorderRadius.circular(4),
-            ),
-            child: Text(
-              title,
+          Text(title,
               style: const TextStyle(
-                color: Colors.white,
-                fontWeight: FontWeight.bold,
-              ),
-            ),
-          ),
+                  color: Color(0xFFD2A679),
+                  fontWeight: FontWeight.bold,
+                  fontSize: 14)),
           const SizedBox(height: 12),
           child,
         ],
@@ -257,8 +221,37 @@ const SizedBox(height: 24),
     );
   }
 
+  Widget _productGrid(List<Product> products) {
+    return LayoutBuilder(
+      builder: (context, constraints) {
+       
+        final isLargeScreen = constraints.maxWidth > 600;
+        final crossAxisCount = isLargeScreen ? 4 : 2;
+        final aspectRatio = isLargeScreen ? 3.5 : 2.5;
+
+        return GridView.builder(
+          shrinkWrap: true,
+          physics: const NeverScrollableScrollPhysics(),
+          itemCount: products.length,
+          gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+            crossAxisCount: crossAxisCount,
+            crossAxisSpacing: 12,
+            mainAxisSpacing: 12,
+            childAspectRatio: aspectRatio,
+          ),
+          itemBuilder: (context, index) {
+            final product = products[index];
+            return _productCard(product);
+          },
+        );
+      },
+    );
+  }
+
   Widget _productCard(Product product) {
     final isSelected = currentTransaction?.product == product;
+    final screenWidth = MediaQuery.of(context).size.width;
+
     return GestureDetector(
       onTap: () {
         setState(() {
@@ -268,42 +261,69 @@ const SizedBox(height: 24),
           );
         });
       },
-      child: LayoutBuilder(
-        builder: (context, constraints) {
-          final double screenWidth = constraints.maxWidth;
-          final double cardWidth = (screenWidth / 2) - 18;
-          return Container(
-            width: cardWidth,
-            padding: const EdgeInsets.all(12),
-            decoration: BoxDecoration(
-              color: isSelected
-                  ? const Color(0xFFD2A679)
-                  : const Color(0xFF3A3A3A),
-              borderRadius: BorderRadius.circular(8),
+      child: Container(
+        padding: const EdgeInsets.all(12),
+        decoration: BoxDecoration(
+          color: isSelected ? const Color(0xFFD2A679) : const Color(0xFF3A3A3A),
+          borderRadius: BorderRadius.circular(12),
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              product.name,
+              style: TextStyle(
+                color: isSelected ? Colors.black : Colors.white,
+                fontSize: screenWidth < 400 ? 12 : 14,
+              ),
             ),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  product.name,
-                  style: TextStyle(
-                    color: isSelected ? Colors.black : Colors.white,
-                    fontSize: 14,
-                  ),
-                ),
-                const SizedBox(height: 6),
-                Text(
-                  CurrencyHelper.formatRupiah(product.price),
-                  style: TextStyle(
-                    color: isSelected ? Colors.black : const Color(0xFFD2A679),
-                    fontSize: 16,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-              ],
+            const SizedBox(height: 6),
+            Text(
+              CurrencyHelper.formatRupiah(product.price),
+              style: TextStyle(
+                color: isSelected ? Colors.black : const Color(0xFFD2A679),
+                fontSize: screenWidth < 400 ? 14 : 16,
+                fontWeight: FontWeight.bold,
+              ),
             ),
-          );
-        },
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _inputField(String label, String hint) {
+    return TextField(
+      style: const TextStyle(color: Colors.white),
+      decoration: InputDecoration(
+        labelText: label,
+        labelStyle: const TextStyle(color: Colors.white70),
+        hintText: hint,
+        hintStyle: const TextStyle(color: Colors.white38),
+        filled: true,
+        fillColor: const Color(0xFF2C2C2C),
+        border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
+        enabledBorder: OutlineInputBorder(
+          borderSide: const BorderSide(color: Colors.white24),
+          borderRadius: BorderRadius.circular(8),
+        ),
+        focusedBorder: OutlineInputBorder(
+          borderSide: const BorderSide(color: Color(0xFFD2A679)),
+          borderRadius: BorderRadius.circular(8),
+        ),
+      ),
+    );
+  }
+
+  Widget _quantityButton(IconData icon, VoidCallback onPressed) {
+    return Container(
+      decoration: const BoxDecoration(
+        shape: BoxShape.circle,
+        color: Color(0xFFD2A679),
+      ),
+      child: IconButton(
+        onPressed: onPressed,
+        icon: Icon(icon, color: Colors.black),
       ),
     );
   }

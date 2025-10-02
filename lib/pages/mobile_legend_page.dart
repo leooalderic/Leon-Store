@@ -15,7 +15,7 @@ class MobileLegendsPage extends BaseGamePage {
   List<Product> get passProducts => ProductData.passList;
 
   @override
-  BaseGamePageState<BaseGamePage> createState() => _MobileLegendsPageState();
+  BaseGamePageState createState() => _MobileLegendsPageState();
 }
 
 class _MobileLegendsPageState extends BaseGamePageState<MobileLegendsPage> {}
