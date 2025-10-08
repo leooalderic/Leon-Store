@@ -1,4 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart'; 
+import 'home_page.dart';
+import 'login_page.dart';
 
 class SplashScreen extends StatefulWidget {
   const SplashScreen({super.key});
@@ -21,9 +24,31 @@ class _SplashScreenState extends State<SplashScreen>
 
     _controller.forward();
 
+   
     Future.delayed(const Duration(seconds: 3), () {
-      Navigator.of(context).pushReplacementNamed('/login');
+      checkLoginStatus();
     });
+  }
+
+  
+  Future<void> checkLoginStatus() async {
+    final prefs = await SharedPreferences.getInstance();
+    bool isLoggedIn = prefs.getBool('isLoggedIn') ?? false;
+    String? email = prefs.getString('email');
+
+    if (isLoggedIn && email != null) {
+      
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(builder: (context) => HomePage(email: email)),
+      );
+    } else {
+      
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(builder: (context) => const LoginPage()),
+      );
+    }
   }
 
   @override
@@ -40,9 +65,8 @@ class _SplashScreenState extends State<SplashScreen>
         child: FadeTransition(
           opacity: _animation,
           child: Column(
-            mainAxisSize: MainAxisSize.min, 
+            mainAxisSize: MainAxisSize.min,
             children: [
-              
               Container(
                 width: 130,
                 height: 130,
@@ -55,16 +79,14 @@ class _SplashScreenState extends State<SplashScreen>
                 ),
                 child: ClipOval(
                   child: Image.asset(
-                    'assets/images/splash.jpg', 
+                    'assets/images/splash.jpg',
                     width: 120,
                     height: 120,
                     fit: BoxFit.cover,
                   ),
                 ),
               ),
-
               const SizedBox(height: 20),
-
               const Text(
                 'LEON STORE',
                 style: TextStyle(
@@ -74,9 +96,7 @@ class _SplashScreenState extends State<SplashScreen>
                   letterSpacing: 2,
                 ),
               ),
-
               const SizedBox(height: 8),
-
               const Text(
                 'by Leony Andika Triwicaksono_022',
                 style: TextStyle(

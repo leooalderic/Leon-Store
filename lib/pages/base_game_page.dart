@@ -25,7 +25,7 @@ abstract class BaseGamePageState<T extends BaseGamePage> extends State<T> {
     final total = currentTransaction?.total ?? 0;
 
     return Scaffold(
-      backgroundColor: const Color(0xFF121212), // lebih gelap
+      backgroundColor: const Color(0xFF121212), 
       appBar: AppBar(
         backgroundColor: const Color(0xFF1E1E1E),
         elevation: 0,
@@ -43,7 +43,7 @@ abstract class BaseGamePageState<T extends BaseGamePage> extends State<T> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Input Akun
+            
             _sectionCard(
               title: "Data Akun",
               child: Column(
@@ -56,7 +56,7 @@ abstract class BaseGamePageState<T extends BaseGamePage> extends State<T> {
             ),
             const SizedBox(height: 16),
 
-            // Pilih Nominal
+            
             _sectionCard(
               title: "Pilih Nominal",
               child: Column(
@@ -125,12 +125,12 @@ abstract class BaseGamePageState<T extends BaseGamePage> extends State<T> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text("Produk: ${currentTransaction?.product.name ?? '-'}",
+                  Text("Produk : ${currentTransaction?.product.name ?? '-'}",
                       style: const TextStyle(color: Colors.white70)),
                   Text(
-                      "Harga: ${CurrencyHelper.formatRupiah(currentTransaction?.product.price ?? 0)}",
+                      "Harga   : ${CurrencyHelper.formatRupiah(currentTransaction?.product.price ?? 0)}",
                       style: const TextStyle(color: Colors.white70)),
-                  Text("Jumlah: $quantity",
+                  Text("Jumlah : $quantity",
                       style: const TextStyle(color: Colors.white70)),
                   const Divider(color: Colors.white24),
                   Text(

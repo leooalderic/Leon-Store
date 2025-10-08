@@ -1,77 +1,68 @@
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'home_page.dart';
-import 'register_page.dart';
+import 'login_page.dart';
 
-class LoginPage extends StatefulWidget {
-  const LoginPage({super.key});
+class RegisterPage extends StatefulWidget {
+  const RegisterPage({super.key});
 
   @override
-  State<LoginPage> createState() => _LoginPageState();
+  State<RegisterPage> createState() => _RegisterPageState();
 }
 
-class _LoginPageState extends State<LoginPage> {
+class _RegisterPageState extends State<RegisterPage> {
   final TextEditingController emailController = TextEditingController();
   final TextEditingController passwordController = TextEditingController();
   bool _obscurePassword = true;
 
-  Future<void> loginUser() async {
-    final prefs = await SharedPreferences.getInstance();
-    final registeredEmail = prefs.getString('registeredEmail');
-    final registeredPassword = prefs.getString('registeredPassword');
-
+  Future<void> registerUser() async {
     String email = emailController.text.trim();
     String password = passwordController.text.trim();
 
     if (email.isEmpty || password.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
-          content: Text("ISI DULU KINKKK!!!!"),
+          content: Text("Isi semua kolom terlebih dahulu!"),
           backgroundColor: Colors.orange,
-          behavior: SnackBarBehavior.floating,
         ),
       );
       return;
     }
 
-    if (registeredEmail == null || registeredPassword == null) {
+    if (!email.contains("@")) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
-          content: Text("Belum ada akun terdaftar! Silakan daftar dulu."),
+          content: Text("Format email tidak valid!"),
           backgroundColor: Colors.red,
-          behavior: SnackBarBehavior.floating,
         ),
       );
       return;
     }
 
-    if (email == registeredEmail && password == registeredPassword) {
-      await prefs.setBool('isLoggedIn', true);
-      await prefs.setString('email', email);
-
+    if (password.length < 6) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
-          content: Text("Login berhasil!"),
-          backgroundColor: Colors.green,
-          behavior: SnackBarBehavior.floating,
-        ),
-      );
-
-      Navigator.pushReplacement(
-        context,
-        MaterialPageRoute(
-          builder: (context) => HomePage(email: email),
-        ),
-      );
-    } else {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text("Email atau password salah!"),
+          content: Text("Password minimal 6 karakter!"),
           backgroundColor: Colors.red,
-          behavior: SnackBarBehavior.floating,
         ),
       );
+      return;
     }
+
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString('email', email);
+    await prefs.setString('password', password);
+
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(
+        content: Text("Pendaftaran berhasil! Silakan masuk."),
+        backgroundColor: Colors.green,
+      ),
+    );
+
+    Navigator.pushReplacement(
+      context,
+      MaterialPageRoute(builder: (context) => const LoginPage()),
+    );
   }
 
   @override
@@ -84,34 +75,29 @@ class _LoginPageState extends State<LoginPage> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
-              const CircleAvatar(
-                radius: 50,
-                backgroundImage: AssetImage("assets/logo.jpg"),
-              ),
-              const SizedBox(height: 20),
               const Text(
-                "Login",
-                textAlign: TextAlign.center,
+                "Daftar",
                 style: TextStyle(
-                  fontSize: 28,
+                  fontSize: 30,
                   fontWeight: FontWeight.bold,
-                  color: Colors.white,
+                  color: Colors.white, // 🔥 teks jadi putih
                 ),
               ),
               const SizedBox(height: 8),
               const Text(
-                "Masuk dengan akun yang telah Kamu daftarkan.",
-                textAlign: TextAlign.center,
+                "Masukkan informasi pendaftaran yang valid.",
                 style: TextStyle(
-                  fontSize: 14,
                   color: Colors.white70,
+                  fontSize: 14,
                 ),
               ),
               const SizedBox(height: 30),
+
+              // Email field
               Align(
                 alignment: Alignment.centerLeft,
                 child: const Text(
-                  "Email",
+                  "Alamat Email",
                   style: TextStyle(color: Colors.white70, fontSize: 14),
                 ),
               ),
@@ -125,7 +111,7 @@ class _LoginPageState extends State<LoginPage> {
                   hintStyle: const TextStyle(color: Colors.white38),
                   filled: true,
                   fillColor: const Color(0xFF2C2C2C),
-                  prefixIcon: const Icon(Icons.email, color: Colors.white70),
+                  prefixIcon: const Icon(Icons.email, color: Colors.white),
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(8),
                     borderSide: BorderSide.none,
@@ -133,10 +119,12 @@ class _LoginPageState extends State<LoginPage> {
                 ),
               ),
               const SizedBox(height: 20),
+
+              // Password field
               Align(
                 alignment: Alignment.centerLeft,
                 child: const Text(
-                  "Kata sandi",
+                  "Kata Sandi",
                   style: TextStyle(color: Colors.white70, fontSize: 14),
                 ),
               ),
@@ -150,13 +138,13 @@ class _LoginPageState extends State<LoginPage> {
                   hintStyle: const TextStyle(color: Colors.white38),
                   filled: true,
                   fillColor: const Color(0xFF2C2C2C),
-                  prefixIcon: const Icon(Icons.lock, color: Colors.white70),
+                  prefixIcon: const Icon(Icons.lock, color: Colors.white),
                   suffixIcon: IconButton(
                     icon: Icon(
                       _obscurePassword
                           ? Icons.visibility_off
                           : Icons.visibility,
-                      color: Colors.white70,
+                      color: Colors.white,
                     ),
                     onPressed: () {
                       setState(() {
@@ -171,30 +159,39 @@ class _LoginPageState extends State<LoginPage> {
                 ),
               ),
               const SizedBox(height: 30),
+
+              // Tombol daftar
               SizedBox(
                 width: double.infinity,
                 child: ElevatedButton.icon(
-                  icon: const Icon(Icons.lock, color: Colors.white),
+                  onPressed: registerUser,
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: const Color(0xFFB38B59),
+                    backgroundColor: const Color(0xFFC1A57B),
                     padding: const EdgeInsets.symmetric(vertical: 16),
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(8),
                     ),
                   ),
-                  onPressed: loginUser,
+                  icon: const Icon(Icons.person_add, color: Colors.white),
                   label: const Text(
-                    "Masuk",
-                    style: TextStyle(fontSize: 18, color: Colors.white),
+                    "Daftar",
+                    style: TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.white,
+                    ),
                   ),
                 ),
               ),
+
               const SizedBox(height: 20),
+
+              // Link ke login
               Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   const Text(
-                    "Belum punya akun?",
+                    "Sudah memiliki akun?",
                     style: TextStyle(color: Colors.white70),
                   ),
                   TextButton(
@@ -202,14 +199,13 @@ class _LoginPageState extends State<LoginPage> {
                       Navigator.pushReplacement(
                         context,
                         MaterialPageRoute(
-                          builder: (context) => const RegisterPage(),
-                        ),
+                            builder: (context) => const LoginPage()),
                       );
                     },
                     child: const Text(
-                      "Daftar",
+                      "Masuk",
                       style: TextStyle(
-                        color: Color(0xFFB38B59),
+                        color: Color(0xFFC1A57B),
                         fontWeight: FontWeight.bold,
                       ),
                     ),
