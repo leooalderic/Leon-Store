@@ -18,6 +18,7 @@ class _RegisterPageState extends State<RegisterPage> {
     String email = emailController.text.trim();
     String password = passwordController.text.trim();
 
+    // Validasi input
     if (email.isEmpty || password.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
@@ -48,10 +49,13 @@ class _RegisterPageState extends State<RegisterPage> {
       return;
     }
 
+    // Simpan data ke SharedPreferences
     final prefs = await SharedPreferences.getInstance();
     await prefs.setString('email', email);
     await prefs.setString('password', password);
+    await prefs.setBool('isLoggedIn', false); // belum login otomatis
 
+    // Notifikasi sukses
     ScaffoldMessenger.of(context).showSnackBar(
       const SnackBar(
         content: Text("Pendaftaran berhasil! Silakan masuk."),
@@ -59,6 +63,7 @@ class _RegisterPageState extends State<RegisterPage> {
       ),
     );
 
+    // Pindah ke halaman login
     Navigator.pushReplacement(
       context,
       MaterialPageRoute(builder: (context) => const LoginPage()),
@@ -80,7 +85,7 @@ class _RegisterPageState extends State<RegisterPage> {
                 style: TextStyle(
                   fontSize: 30,
                   fontWeight: FontWeight.bold,
-                  color: Colors.white, // 🔥 teks jadi putih
+                  color: Colors.white, // tetap putih
                 ),
               ),
               const SizedBox(height: 8),
@@ -93,10 +98,10 @@ class _RegisterPageState extends State<RegisterPage> {
               ),
               const SizedBox(height: 30),
 
-              // Email field
-              Align(
+              // Email
+              const Align(
                 alignment: Alignment.centerLeft,
-                child: const Text(
+                child: Text(
                   "Alamat Email",
                   style: TextStyle(color: Colors.white70, fontSize: 14),
                 ),
@@ -120,10 +125,10 @@ class _RegisterPageState extends State<RegisterPage> {
               ),
               const SizedBox(height: 20),
 
-              // Password field
-              Align(
+              // Password
+              const Align(
                 alignment: Alignment.centerLeft,
-                child: const Text(
+                child: Text(
                   "Kata Sandi",
                   style: TextStyle(color: Colors.white70, fontSize: 14),
                 ),

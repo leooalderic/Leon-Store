@@ -17,8 +17,8 @@ class _LoginPageState extends State<LoginPage> {
 
   Future<void> loginUser() async {
     final prefs = await SharedPreferences.getInstance();
-    final registeredEmail = prefs.getString('registeredEmail');
-    final registeredPassword = prefs.getString('registeredPassword');
+    final registeredEmail = prefs.getString('email'); // ✅ sama dengan register_page.dart
+    final registeredPassword = prefs.getString('password'); // ✅ sama juga
 
     String email = emailController.text.trim();
     String password = passwordController.text.trim();
@@ -26,7 +26,7 @@ class _LoginPageState extends State<LoginPage> {
     if (email.isEmpty || password.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
-          content: Text("ISI DULU KINKKK!!!!"),
+          content: Text("Isi semua kolom dulu ya!"),
           backgroundColor: Colors.orange,
           behavior: SnackBarBehavior.floating,
         ),
@@ -108,9 +108,11 @@ class _LoginPageState extends State<LoginPage> {
                 ),
               ),
               const SizedBox(height: 30),
-              Align(
+
+              // Email
+              const Align(
                 alignment: Alignment.centerLeft,
-                child: const Text(
+                child: Text(
                   "Email",
                   style: TextStyle(color: Colors.white70, fontSize: 14),
                 ),
@@ -133,9 +135,11 @@ class _LoginPageState extends State<LoginPage> {
                 ),
               ),
               const SizedBox(height: 20),
-              Align(
+
+              // Password
+              const Align(
                 alignment: Alignment.centerLeft,
-                child: const Text(
+                child: Text(
                   "Kata sandi",
                   style: TextStyle(color: Colors.white70, fontSize: 14),
                 ),
@@ -170,7 +174,10 @@ class _LoginPageState extends State<LoginPage> {
                   ),
                 ),
               ),
+
               const SizedBox(height: 30),
+
+              // Tombol login
               SizedBox(
                 width: double.infinity,
                 child: ElevatedButton.icon(
@@ -190,6 +197,8 @@ class _LoginPageState extends State<LoginPage> {
                 ),
               ),
               const SizedBox(height: 20),
+
+              // Pindah ke register
               Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
