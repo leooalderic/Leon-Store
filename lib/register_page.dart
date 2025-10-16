@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:shared_preferences/shared_preferences.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'login_page.dart';
 
 class RegisterPage extends StatefulWidget {
@@ -13,6 +13,7 @@ class _RegisterPageState extends State<RegisterPage> {
   final TextEditingController emailController = TextEditingController();
   final TextEditingController passwordController = TextEditingController();
   bool _obscurePassword = true;
+  bool _isLoading = false;
 
   Future<void> registerUser() async {
     String email = emailController.text.trim();
@@ -20,53 +21,59 @@ class _RegisterPageState extends State<RegisterPage> {
 
     // Validasi input
     if (email.isEmpty || password.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text("Isi semua kolom terlebih dahulu!"),
-          backgroundColor: Colors.orange,
-        ),
-      );
+      _showSnackBar("Isi semua kolom terlebih dahulu!", Colors.orange);
       return;
     }
 
     if (!email.contains("@")) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text("Format email tidak valid!"),
-          backgroundColor: Colors.red,
-        ),
-      );
+      _showSnackBar("Format email tidak valid!", Colors.red);
       return;
     }
 
     if (password.length < 6) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text("Password minimal 6 karakter!"),
-          backgroundColor: Colors.red,
-        ),
-      );
+      _showSnackBar("Password minimal 6 karakter!", Colors.red);
       return;
     }
 
-    // Simpan data ke SharedPreferences
-    final prefs = await SharedPreferences.getInstance();
-    await prefs.setString('email', email);
-    await prefs.setString('password', password);
-    await prefs.setBool('isLoggedIn', false); // belum login otomatis
+    setState(() => _isLoading = true);
 
-    // Notifikasi sukses
+    try {
+      // Registrasi ke Firebase Auth
+      await FirebaseAuth.instance.createUserWithEmailAndPassword(
+        email: email,
+        password: password,
+      );
+
+      _showSnackBar("Pendaftaran berhasil! Silakan masuk.", Colors.green);
+
+      // Setelah sukses daftar, pindah ke halaman login
+      if (mounted) {
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(builder: (context) => const LoginPage()),
+        );
+      }
+    } on FirebaseAuthException catch (e) {
+      String message;
+      if (e.code == 'email-already-in-use') {
+        message = 'Email sudah terdaftar!';
+      } else if (e.code == 'weak-password') {
+        message = 'Password terlalu lemah!';
+      } else {
+        message = e.message ?? 'Pendaftaran gagal';
+      }
+      _showSnackBar(message, Colors.red);
+    } finally {
+      if (mounted) setState(() => _isLoading = false);
+    }
+  }
+
+  void _showSnackBar(String message, Color color) {
     ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
-        content: Text("Pendaftaran berhasil! Silakan masuk."),
-        backgroundColor: Colors.green,
+      SnackBar(
+        content: Text(message),
+        backgroundColor: color,
       ),
-    );
-
-    // Pindah ke halaman login
-    Navigator.pushReplacement(
-      context,
-      MaterialPageRoute(builder: (context) => const LoginPage()),
     );
   }
 
@@ -85,16 +92,13 @@ class _RegisterPageState extends State<RegisterPage> {
                 style: TextStyle(
                   fontSize: 30,
                   fontWeight: FontWeight.bold,
-                  color: Colors.white, // tetap putih
+                  color: Colors.white,
                 ),
               ),
               const SizedBox(height: 8),
               const Text(
                 "Masukkan informasi pendaftaran yang valid.",
-                style: TextStyle(
-                  color: Colors.white70,
-                  fontSize: 14,
-                ),
+                style: TextStyle(color: Colors.white70, fontSize: 14),
               ),
               const SizedBox(height: 30),
 
@@ -169,7 +173,7 @@ class _RegisterPageState extends State<RegisterPage> {
               SizedBox(
                 width: double.infinity,
                 child: ElevatedButton.icon(
-                  onPressed: registerUser,
+                  onPressed: _isLoading ? null : registerUser,
                   style: ElevatedButton.styleFrom(
                     backgroundColor: const Color(0xFFC1A57B),
                     padding: const EdgeInsets.symmetric(vertical: 16),
@@ -177,10 +181,19 @@ class _RegisterPageState extends State<RegisterPage> {
                       borderRadius: BorderRadius.circular(8),
                     ),
                   ),
-                  icon: const Icon(Icons.person_add, color: Colors.white),
-                  label: const Text(
-                    "Daftar",
-                    style: TextStyle(
+                  icon: _isLoading
+                      ? const SizedBox(
+                          width: 18,
+                          height: 18,
+                          child: CircularProgressIndicator(
+                            strokeWidth: 2,
+                            color: Colors.white,
+                          ),
+                        )
+                      : const Icon(Icons.person_add, color: Colors.white),
+                  label: Text(
+                    _isLoading ? "Mendaftar..." : "Daftar",
+                    style: const TextStyle(
                       fontSize: 18,
                       fontWeight: FontWeight.bold,
                       color: Colors.white,

@@ -1,14 +1,22 @@
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:firebase_core/firebase_core.dart';
+import 'firebase_options.dart';
+
 import 'login_page.dart';
 import 'splash_screen.dart';
 import 'home_page.dart';
-import 'register_page.dart'; // pastikan kamu sudah buat file ini
+import 'register_page.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
-  // Cek apakah user sudah login
+  // 🔥 Inisialisasi Firebase
+  await Firebase.initializeApp(
+    options: DefaultFirebaseOptions.currentPlatform,
+  );
+
+  // SharedPreferences untuk cek login
   final prefs = await SharedPreferences.getInstance();
   bool isLoggedIn = prefs.getBool('isLoggedIn') ?? false;
 
@@ -25,15 +33,12 @@ class MyApp extends StatelessWidget {
       title: 'Leon Store',
       theme: ThemeData.dark(),
       debugShowCheckedModeBanner: false,
-
-      // SplashScreen akan tetap jadi halaman awal
       initialRoute: '/',
       routes: {
         '/': (context) => const SplashScreen(),
         '/login': (context) => const LoginPage(),
         '/register': (context) => const RegisterPage(),
         '/home': (context) {
-          // Ambil email dari SharedPreferences
           return FutureBuilder(
             future: SharedPreferences.getInstance(),
             builder: (context, snapshot) {

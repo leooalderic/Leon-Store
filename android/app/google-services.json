@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "202371890081",
+    "project_id": "topup-dm",
+    "storage_bucket": "topup-dm.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:202371890081:android:d882f39b1c46fdfedee9e0",
+        "android_client_info": {
+          "package_name": "com.example.leon_flutter"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCjiV9XDgWS25-UgUtKYcOOZ7p8H3ipfGk"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

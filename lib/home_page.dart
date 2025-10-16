@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'pages/mobile_legend_page.dart';
 import 'pages/pubg_page.dart';
 import 'pages/free_fire_page.dart';
@@ -10,14 +12,39 @@ class HomePage extends StatelessWidget {
 
   const HomePage({super.key, required this.email});
 
+  Future<void> _logout(BuildContext context) async {
+    await FirebaseAuth.instance.signOut();
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.clear();
+
+    // Pindah ke halaman login
+    if (context.mounted) {
+      Navigator.pushNamedAndRemoveUntil(context, '/login', (route) => false);
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: const Color.fromARGB(255, 30, 30, 30),
-      body: LayoutBuilder(  
+      appBar: AppBar(
+        backgroundColor: const Color.fromARGB(255, 30, 30, 30),
+        title: Text(
+          "Selamat datang, $email",
+          style: const TextStyle(color: Colors.white, fontSize: 16),
+        ),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.logout, color: Colors.redAccent),
+            tooltip: 'Logout',
+            onPressed: () => _logout(context),
+          ),
+        ],
+      ),
+      body: LayoutBuilder(
         builder: (context, constraints) {
           final isMobile = constraints.maxWidth < 600;
-          final crossAxisCount = isMobile ? 2 : 3; 
+          final crossAxisCount = isMobile ? 2 : 3;
 
           return CustomScrollView(
             slivers: [
@@ -25,7 +52,7 @@ class HomePage extends StatelessWidget {
                 backgroundColor: const Color.fromARGB(255, 30, 30, 30),
                 pinned: false,
                 floating: false,
-                expandedHeight: isMobile ? 250 : 450, 
+                expandedHeight: isMobile ? 250 : 450,
                 flexibleSpace: FlexibleSpaceBar(
                   background: Padding(
                     padding: EdgeInsets.symmetric(horizontal: isMobile ? 20 : 50, vertical: 10),
@@ -65,7 +92,7 @@ class HomePage extends StatelessWidget {
                   crossAxisCount: crossAxisCount,
                   crossAxisSpacing: 12,
                   mainAxisSpacing: 12,
-                  childAspectRatio: isMobile ? 2.5 : 4.6, // Adjust aspect ratio for mobile vs. desktop
+                  childAspectRatio: isMobile ? 2.5 : 4.6,
                   children: [
                     GameCard(
                       title: "Mobile Legends",

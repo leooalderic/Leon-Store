@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:shared_preferences/shared_preferences.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'home_page.dart';
 import 'register_page.dart';
 
@@ -14,64 +14,57 @@ class _LoginPageState extends State<LoginPage> {
   final TextEditingController emailController = TextEditingController();
   final TextEditingController passwordController = TextEditingController();
   bool _obscurePassword = true;
+  bool _isLoading = false;
 
   Future<void> loginUser() async {
-    final prefs = await SharedPreferences.getInstance();
-    final registeredEmail = prefs.getString('email'); // ✅ sama dengan register_page.dart
-    final registeredPassword = prefs.getString('password'); // ✅ sama juga
-
     String email = emailController.text.trim();
     String password = passwordController.text.trim();
 
     if (email.isEmpty || password.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text("Isi semua kolom dulu ya!"),
-          backgroundColor: Colors.orange,
-          behavior: SnackBarBehavior.floating,
-        ),
-      );
+      _showSnackBar("Isi semua kolom dulu ya!", Colors.orange);
       return;
     }
 
-    if (registeredEmail == null || registeredPassword == null) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text("Belum ada akun terdaftar! Silakan daftar dulu."),
-          backgroundColor: Colors.red,
-          behavior: SnackBarBehavior.floating,
-        ),
+    setState(() => _isLoading = true);
+
+    try {
+      // 🔐 Login ke Firebase Auth
+      await FirebaseAuth.instance.signInWithEmailAndPassword(
+        email: email,
+        password: password,
       );
-      return;
+
+      _showSnackBar("Login berhasil!", Colors.green);
+
+      if (mounted) {
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(builder: (context) => HomePage(email: email)),
+        );
+      }
+    } on FirebaseAuthException catch (e) {
+      String message;
+      if (e.code == 'user-not-found') {
+        message = 'Akun tidak ditemukan. Silakan daftar dulu.';
+      } else if (e.code == 'wrong-password') {
+        message = 'Password salah!';
+      } else {
+        message = e.message ?? 'Login gagal';
+      }
+      _showSnackBar(message, Colors.red);
+    } finally {
+      if (mounted) setState(() => _isLoading = false);
     }
+  }
 
-    if (email == registeredEmail && password == registeredPassword) {
-      await prefs.setBool('isLoggedIn', true);
-      await prefs.setString('email', email);
-
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text("Login berhasil!"),
-          backgroundColor: Colors.green,
-          behavior: SnackBarBehavior.floating,
-        ),
-      );
-
-      Navigator.pushReplacement(
-        context,
-        MaterialPageRoute(
-          builder: (context) => HomePage(email: email),
-        ),
-      );
-    } else {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text("Email atau password salah!"),
-          backgroundColor: Colors.red,
-          behavior: SnackBarBehavior.floating,
-        ),
-      );
-    }
+  void _showSnackBar(String message, Color color) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(message),
+        backgroundColor: color,
+        behavior: SnackBarBehavior.floating,
+      ),
+    );
   }
 
   @override
@@ -109,7 +102,7 @@ class _LoginPageState extends State<LoginPage> {
               ),
               const SizedBox(height: 30),
 
-              // Email
+              // Email Field
               const Align(
                 alignment: Alignment.centerLeft,
                 child: Text(
@@ -136,7 +129,7 @@ class _LoginPageState extends State<LoginPage> {
               ),
               const SizedBox(height: 20),
 
-              // Password
+              // Password Field
               const Align(
                 alignment: Alignment.centerLeft,
                 child: Text(
@@ -174,14 +167,22 @@ class _LoginPageState extends State<LoginPage> {
                   ),
                 ),
               ),
-
               const SizedBox(height: 30),
 
-              // Tombol login
+              // Tombol Login
               SizedBox(
                 width: double.infinity,
                 child: ElevatedButton.icon(
-                  icon: const Icon(Icons.lock, color: Colors.white),
+                  icon: _isLoading
+                      ? const SizedBox(
+                          width: 18,
+                          height: 18,
+                          child: CircularProgressIndicator(
+                            strokeWidth: 2,
+                            color: Colors.white,
+                          ),
+                        )
+                      : const Icon(Icons.lock, color: Colors.white),
                   style: ElevatedButton.styleFrom(
                     backgroundColor: const Color(0xFFB38B59),
                     padding: const EdgeInsets.symmetric(vertical: 16),
@@ -189,16 +190,16 @@ class _LoginPageState extends State<LoginPage> {
                       borderRadius: BorderRadius.circular(8),
                     ),
                   ),
-                  onPressed: loginUser,
-                  label: const Text(
-                    "Masuk",
-                    style: TextStyle(fontSize: 18, color: Colors.white),
+                  onPressed: _isLoading ? null : loginUser,
+                  label: Text(
+                    _isLoading ? "Memproses..." : "Masuk",
+                    style: const TextStyle(fontSize: 18, color: Colors.white),
                   ),
                 ),
               ),
               const SizedBox(height: 20),
 
-              // Pindah ke register
+              // Pindah ke Register
               Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
