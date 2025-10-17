@@ -19,13 +19,26 @@ abstract class BaseGamePageState<T extends BaseGamePage> extends State<T> {
   Transaction? currentTransaction;
   int quantity = 1;
   double rating = 3;
+  String? selectedPayment;
+
+  final List<String> paymentMethods = [
+    'Dana',
+    'OVO',
+    'GoPay',
+    'ShopeePay',
+    'Transfer Bank (BCA/BRI/BNI)',
+    'Pulsa (Telkomsel/XL/Indosat)'
+  ];
+
+  final TextEditingController idController = TextEditingController();
+  final TextEditingController serverController = TextEditingController();
 
   @override
   Widget build(BuildContext context) {
     final total = currentTransaction?.total ?? 0;
 
     return Scaffold(
-      backgroundColor: const Color(0xFF121212), 
+      backgroundColor: const Color(0xFF121212),
       appBar: AppBar(
         backgroundColor: const Color(0xFF1E1E1E),
         elevation: 0,
@@ -43,20 +56,17 @@ abstract class BaseGamePageState<T extends BaseGamePage> extends State<T> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            
             _sectionCard(
               title: "Data Akun",
               child: Column(
                 children: [
-                  _inputField("ID", "Masukkan ID"),
+                  _inputField("ID", "Masukkan ID", idController),
                   const SizedBox(height: 12),
-                  _inputField("Server", "Masukkan Server"),
+                  _inputField("Server", "Masukkan Server", serverController),
                 ],
               ),
             ),
             const SizedBox(height: 16),
-
-            
             _sectionCard(
               title: "Pilih Nominal",
               child: Column(
@@ -75,8 +85,6 @@ abstract class BaseGamePageState<T extends BaseGamePage> extends State<T> {
               ),
             ),
             const SizedBox(height: 16),
-
-            // Jumlah Pembelian
             _sectionCard(
               title: "Jumlah Pembelian",
               child: Row(
@@ -99,8 +107,7 @@ abstract class BaseGamePageState<T extends BaseGamePage> extends State<T> {
                     padding: const EdgeInsets.symmetric(horizontal: 16),
                     child: Text(
                       "$quantity",
-                      style:
-                          const TextStyle(color: Colors.white, fontSize: 18),
+                      style: const TextStyle(color: Colors.white, fontSize: 18),
                     ),
                   ),
                   _quantityButton(Icons.add, () {
@@ -118,8 +125,6 @@ abstract class BaseGamePageState<T extends BaseGamePage> extends State<T> {
               ),
             ),
             const SizedBox(height: 16),
-
-            // Detail Transaksi
             _sectionCard(
               title: "Detail Transaksi",
               child: Column(
@@ -145,8 +150,38 @@ abstract class BaseGamePageState<T extends BaseGamePage> extends State<T> {
               ),
             ),
             const SizedBox(height: 16),
-
-            // Rating
+            _sectionCard(
+              title: "Metode Pembayaran",
+              child: DropdownButtonFormField<String>(
+                dropdownColor: const Color(0xFF2C2C2C),
+                value: selectedPayment,
+                items: paymentMethods.map((method) {
+                  return DropdownMenuItem(
+                    value: method,
+                    child:
+                        Text(method, style: const TextStyle(color: Colors.white)),
+                  );
+                }).toList(),
+                onChanged: (value) {
+                  setState(() {
+                    selectedPayment = value;
+                  });
+                },
+                decoration: InputDecoration(
+                  filled: true,
+                  fillColor: const Color(0xFF2C2C2C),
+                  enabledBorder: OutlineInputBorder(
+                    borderSide: const BorderSide(color: Colors.white24),
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  focusedBorder: OutlineInputBorder(
+                    borderSide: const BorderSide(color: Color(0xFFD2A679)),
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                ),
+              ),
+            ),
+            const SizedBox(height: 16),
             _sectionCard(
               title: "Beri Rating",
               child: Center(
@@ -166,8 +201,6 @@ abstract class BaseGamePageState<T extends BaseGamePage> extends State<T> {
               ),
             ),
             const SizedBox(height: 24),
-
-            // Tombol Pesan
             SizedBox(
               width: double.infinity,
               child: ElevatedButton(
@@ -177,11 +210,7 @@ abstract class BaseGamePageState<T extends BaseGamePage> extends State<T> {
                   shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(12)),
                 ),
-                onPressed: () {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(content: Text("Pesanan berhasil dibuat!")),
-                  );
-                },
+                onPressed: _confirmOrder,
                 child: const Text(
                   "Pesan Sekarang!",
                   style: TextStyle(
@@ -191,6 +220,135 @@ abstract class BaseGamePageState<T extends BaseGamePage> extends State<T> {
             ),
           ],
         ),
+      ),
+    );
+  }
+
+  void _confirmOrder() {
+    if (idController.text.isEmpty || serverController.text.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text("Lengkapi ID dan Server terlebih dahulu")),
+      );
+      return;
+    }
+    if (currentTransaction == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text("Pilih produk terlebih dahulu")),
+      );
+      return;
+    }
+    if (selectedPayment == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text("Pilih metode pembayaran terlebih dahulu")),
+      );
+      return;
+    }
+
+    showDialog(
+      context: context,
+      builder: (context) {
+        final total = currentTransaction!.total;
+        return AlertDialog(
+          backgroundColor: const Color(0xFF1E1E1E),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(20),
+          ),
+          title: const Center(
+            child: Text(
+              'Konfirmasi Pesanan',
+              style: TextStyle(
+                color: Color(0xFFD2A679),
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+          ),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start, // 🔹 rata kiri semua
+            children: [
+              _buildConfirmRow('Game', widget.gameTitle),
+              _buildConfirmRow('ID', idController.text),
+              _buildConfirmRow('Server', serverController.text),
+              _buildConfirmRow('Produk', currentTransaction!.product.name),
+              _buildConfirmRow('Jumlah', quantity.toString()),
+              _buildConfirmRow('Metode', selectedPayment!),
+              const Divider(color: Colors.white24),
+              Padding(
+                padding: const EdgeInsets.only(top: 4),
+                child: Text(
+                  'Total: ${CurrencyHelper.formatRupiah(total)}',
+                  style: const TextStyle(
+                    color: Color(0xFFD2A679),
+                    fontWeight: FontWeight.bold,
+                    fontSize: 16,
+                  ),
+                ),
+              ),
+              const SizedBox(height: 8),
+              const Text(
+                'Pastikan data yang Anda masukkan sudah benar.',
+                style: TextStyle(color: Colors.white54, fontSize: 12),
+              ),
+            ],
+          ),
+          actionsAlignment: MainAxisAlignment.center,
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: const Text(
+                'Batal',
+                style: TextStyle(color: Colors.white70),
+              ),
+            ),
+            ElevatedButton(
+              style: ElevatedButton.styleFrom(
+                backgroundColor: const Color(0xFFD2A679),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(10),
+                ),
+              ),
+              onPressed: () {
+                Navigator.pop(context);
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(
+                    content: Text('Pesanan berhasil dikonfirmasi!'),
+                    backgroundColor: Color(0xFFD2A679),
+                  ),
+                );
+              },
+              child: const Text(
+                'Konfirmasi',
+                style: TextStyle(color: Colors.black),
+              ),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  Widget _buildConfirmRow(String label, String value) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 2),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          SizedBox(
+            width: 60,
+            child: Text(
+              '$label:',
+              style: const TextStyle(
+                  color: Colors.white70, fontWeight: FontWeight.w500),
+            ),
+          ),
+          Expanded(
+            child: Text(
+              value,
+              style: const TextStyle(color: Colors.white),
+              textAlign: TextAlign.left, // ✅ fix rata kiri
+            ),
+          ),
+        ],
       ),
     );
   }
@@ -224,7 +382,6 @@ abstract class BaseGamePageState<T extends BaseGamePage> extends State<T> {
   Widget _productGrid(List<Product> products) {
     return LayoutBuilder(
       builder: (context, constraints) {
-       
         final isLargeScreen = constraints.maxWidth > 600;
         final crossAxisCount = isLargeScreen ? 4 : 2;
         final aspectRatio = isLargeScreen ? 3.5 : 2.5;
@@ -292,8 +449,9 @@ abstract class BaseGamePageState<T extends BaseGamePage> extends State<T> {
     );
   }
 
-  Widget _inputField(String label, String hint) {
+  Widget _inputField(String label, String hint, TextEditingController controller) {
     return TextField(
+      controller: controller,
       style: const TextStyle(color: Colors.white),
       decoration: InputDecoration(
         labelText: label,

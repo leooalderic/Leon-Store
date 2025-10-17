@@ -14,14 +14,23 @@ class JokiPage extends StatefulWidget {
 class _JokiPageState extends State<JokiPage> {
   Product? selectedProduct;
   int quantity = 1;
+  String? selectedPayment;
 
   // Input fields
-  final TextEditingController emailController = TextEditingController();
-  final TextEditingController passwordController = TextEditingController();
-  final TextEditingController loginViaController = TextEditingController();
   final TextEditingController nicknameController = TextEditingController();
-  final TextEditingController requestHeroController = TextEditingController();
-  final TextEditingController notesController = TextEditingController();
+  final TextEditingController serverController = TextEditingController();
+  final TextEditingController jamMainController = TextEditingController();
+  final TextEditingController idController = TextEditingController();
+  final TextEditingController tanggalMainController = TextEditingController();
+  final TextEditingController roleController = TextEditingController();
+
+  final List<String> paymentMethods = [
+    "Dana",
+    "OVO",
+    "GoPay",
+    "ShopeePay",
+    "Transfer Bank (BCA/BRI/BNI)"
+  ];
 
   @override
   Widget build(BuildContext context) {
@@ -30,36 +39,36 @@ class _JokiPageState extends State<JokiPage> {
         : null;
 
     return Scaffold(
-      backgroundColor: const Color(0xFF1E1E1E),
+      backgroundColor: const Color(0xFF121212),
       appBar: AppBar(
         backgroundColor: const Color(0xFF1E1E1E),
         elevation: 0,
-        title: const Text("Joki Penurun Rank"),
+        centerTitle: true,
+        title: const Text(
+          "Joki Penurun Rank",
+          style: TextStyle(
+            color: Color(0xFFD2A679),
+            fontWeight: FontWeight.bold,
+          ),
+        ),
       ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(16),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Section Akun
             _sectionCard(
-              title: "Masukkan Data Akun",
+              title: "Data Akun",
               child: Column(
                 children: [
                   Row(
                     children: [
                       Expanded(
-                        child: TextField(
-                          controller: emailController,
-                          decoration: _inputDecoration("Nickname", "Masukkan Nickname"),
-                        ),
+                        child: _inputField("Nickname", "Masukkan Nickname", nicknameController),
                       ),
                       const SizedBox(width: 12),
                       Expanded(
-                        child: TextField(
-                          controller: passwordController,
-                          decoration: _inputDecoration("Server", "Masukkan Server"),
-                        ),
+                        child: _inputField("Server", "Masukkan Server", serverController),
                       ),
                     ],
                   ),
@@ -67,17 +76,11 @@ class _JokiPageState extends State<JokiPage> {
                   Row(
                     children: [
                       Expanded(
-                        child: TextField(
-                          controller: loginViaController,
-                          decoration: _inputDecoration("Jam Main", "Pilih Jam Main"),
-                        ),
+                        child: _inputField("Jam Main", "Masukkan Jam Main", jamMainController),
                       ),
                       const SizedBox(width: 12),
                       Expanded(
-                        child: TextField(
-                          controller: nicknameController,
-                          decoration: _inputDecoration("Id", "Masukkan Id"),
-                        ),
+                        child: _inputField("ID", "Masukkan ID Akun", idController),
                       ),
                     ],
                   ),
@@ -85,116 +88,200 @@ class _JokiPageState extends State<JokiPage> {
                   Row(
                     children: [
                       Expanded(
-                        child: TextField(
-                          controller: requestHeroController,
-                          decoration: _inputDecoration("Tanggal main", "Masukkan Tanggal main"),
-                        ),
+                        child: _inputField("Tanggal Main", "Masukkan Tanggal", tanggalMainController),
                       ),
                       const SizedBox(width: 12),
                       Expanded(
-                        child: TextField(
-                          controller: notesController,
-                          decoration: _inputDecoration("Role (dapat berubah saat main)", "Masukkan Role (Contoh Roamer,Explane, Goldlane, Midlane, Jungler)"),
-                        ),
+                        child: _inputField("Role", "Roamer/Explane/dll", roleController),
                       ),
                     ],
-                  ),
-                  const SizedBox(height: 8),
-                  Container(
-                    padding: const EdgeInsets.all(8),
-                    color: Colors.grey[700],
-                    child: const Text(
-                      "Pastikan data yang anda masukkan sudah benar.",
-                      style: TextStyle(color: Colors.white70, fontSize: 12),
-                    ),
                   ),
                 ],
               ),
             ),
-
             const SizedBox(height: 16),
 
-            // Section Pilih Paket Joki
             _sectionCard(
-              title: "Main Bareng/Match Win",
+              title: "Pilih Paket Joki",
               child: Wrap(
                 spacing: 12,
                 runSpacing: 12,
-                children: JokiProductData.rankList.map((p) => _productCard(p)).toList(),
+                children: JokiProductData.rankList
+                    .map((p) => _productCard(p))
+                    .toList(),
               ),
             ),
-
             const SizedBox(height: 16),
 
-            // Jumlah Pembelian
             _sectionCard(
               title: "Jumlah Slot",
               child: Row(
+                mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  IconButton(
-                    onPressed: () {
-                      if (quantity > 1) setState(() => quantity--);
-                    },
-                    icon: const Icon(Icons.remove, color: Colors.white),
+                  _quantityButton(Icons.remove, () {
+                    if (quantity > 1) setState(() => quantity--);
+                  }),
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 16),
+                    child: Text(
+                      "$quantity",
+                      style: const TextStyle(color: Colors.white, fontSize: 18),
+                    ),
                   ),
-                  Text("$quantity", style: const TextStyle(color: Colors.white, fontSize: 16)),
-                  IconButton(
-                    onPressed: () => setState(() => quantity++),
-                    icon: const Icon(Icons.add, color: Colors.white),
-                  ),
+                  _quantityButton(Icons.add, () => setState(() => quantity++)),
                 ],
               ),
             ),
-
             const SizedBox(height: 16),
 
-            // Detail Transaksi
             _sectionCard(
               title: "Detail Transaksi",
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text("Produk: ${selectedProduct?.name ?? '-'}",
+                  Text("Produk : ${selectedProduct?.name ?? '-'}",
                       style: const TextStyle(color: Colors.white70)),
-                  Text("Harga: ${CurrencyFormatter.format(selectedProduct?.price ?? 0)}",
+                  Text("Harga   : ${CurrencyFormatter.format(selectedProduct?.price ?? 0)}",
                       style: const TextStyle(color: Colors.white70)),
-                  Text("Jumlah: $quantity", style: const TextStyle(color: Colors.white70)),
+                  Text("Jumlah  : $quantity",
+                      style: const TextStyle(color: Colors.white70)),
                   const Divider(color: Colors.white24),
                   Text(
-                    "Total: ${transaction != null ? CurrencyFormatter.format(transaction.total) : '-'}",
-                    style: const TextStyle(color: Color(0xFFD2A679), fontWeight: FontWeight.bold, fontSize: 18),
+                    "Total : ${transaction != null ? CurrencyFormatter.format(transaction.total) : '-'}",
+                    style: const TextStyle(
+                      color: Color(0xFFD2A679),
+                      fontWeight: FontWeight.bold,
+                      fontSize: 18,
+                    ),
                   ),
                 ],
               ),
             ),
-
             const SizedBox(height: 16),
 
-            // Tombol Pesan
+            _sectionCard(
+              title: "Metode Pembayaran",
+              child: DropdownButtonFormField<String>(
+                dropdownColor: const Color(0xFF2C2C2C),
+                value: selectedPayment,
+                items: paymentMethods.map((method) {
+                  return DropdownMenuItem(
+                    value: method,
+                    child: Text(method, style: const TextStyle(color: Colors.white)),
+                  );
+                }).toList(),
+                onChanged: (value) => setState(() => selectedPayment = value),
+                decoration: InputDecoration(
+                  filled: true,
+                  fillColor: const Color(0xFF2C2C2C),
+                  enabledBorder: OutlineInputBorder(
+                    borderSide: const BorderSide(color: Colors.white24),
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  focusedBorder: OutlineInputBorder(
+                    borderSide: const BorderSide(color: Color(0xFFD2A679)),
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                ),
+                hint: const Text(
+                  "Pilih Metode Pembayaran",
+                  style: TextStyle(color: Colors.white70),
+                ),
+              ),
+            ),
+            const SizedBox(height: 24),
+
             SizedBox(
               width: double.infinity,
-              child: ElevatedButton.icon(
+              child: ElevatedButton(
                 style: ElevatedButton.styleFrom(
                   backgroundColor: const Color(0xFFD2A679),
                   padding: const EdgeInsets.symmetric(vertical: 16),
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                  shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12)),
                 ),
-                onPressed: () {
-                  if (transaction != null) {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(
-                        content: Text(
-                          "Berhasil memesan ${transaction.product.name} x${transaction.quantity} (${CurrencyFormatter.format(transaction.total)})",
-                        ),
-                      ),
-                    );
-                  }
-                },
-                icon: const Icon(Icons.shopping_bag, color: Colors.white),
-                label: const Text("Pesan Sekarang!", style: TextStyle(color: Colors.white)),
+                onPressed: transaction != null && selectedPayment != null
+                    ? () => _showConfirmationDialog(transaction)
+                    : null,
+                child: const Text(
+                  "Pesan Sekarang!",
+                  style: TextStyle(
+                      color: Colors.white, fontWeight: FontWeight.bold),
+                ),
               ),
             ),
           ],
+        ),
+      ),
+    );
+  }
+
+  void _showConfirmationDialog(Transaction transaction) {
+    showDialog(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          backgroundColor: const Color(0xFF1E1E1E),
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+          title: const Text(
+            "Konfirmasi Pesanan",
+            style: TextStyle(
+              color: Color(0xFFD2A679),
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              _confirmText("Produk", transaction.product.name),
+              _confirmText("Jumlah", "${transaction.quantity}x"),
+              _confirmText("Metode", selectedPayment ?? "-"),
+              const Divider(color: Colors.white24),
+              _confirmText("Total", CurrencyFormatter.format(transaction.total),
+                  isBold: true, color: const Color(0xFFD2A679)),
+              const SizedBox(height: 10),
+              const Text(
+                "Pastikan data yang Anda masukkan sudah benar.",
+                style: TextStyle(color: Colors.white70, fontSize: 12),
+              ),
+            ],
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: const Text("Batal", style: TextStyle(color: Colors.white70)),
+            ),
+            ElevatedButton(
+              style: ElevatedButton.styleFrom(
+                backgroundColor: const Color(0xFFD2A679),
+                shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(8)),
+              ),
+              onPressed: () {
+                Navigator.pop(context);
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(content: Text("Pesanan berhasil dikonfirmasi!")),
+                );
+              },
+              child: const Text("Konfirmasi",
+                  style: TextStyle(color: Colors.white)),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  Widget _confirmText(String label, String value,
+      {bool isBold = false, Color color = Colors.white70}) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 2),
+      child: Text(
+        "$label : $value",
+        style: TextStyle(
+          color: color,
+          fontWeight: isBold ? FontWeight.bold : FontWeight.normal,
         ),
       ),
     );
@@ -204,16 +291,25 @@ class _JokiPageState extends State<JokiPage> {
     return Container(
       margin: const EdgeInsets.only(bottom: 12),
       padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(color: const Color(0xFF2C2C2C), borderRadius: BorderRadius.circular(12)),
-      child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-        Container(
-          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-          decoration: BoxDecoration(color: const Color(0xFFD2A679), borderRadius: BorderRadius.circular(4)),
-          child: Text(title, style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
-        ),
-        const SizedBox(height: 12),
-        child,
-      ]),
+      decoration: BoxDecoration(
+        color: const Color(0xFF1E1E1E),
+        borderRadius: BorderRadius.circular(12),
+        boxShadow: const [
+          BoxShadow(color: Colors.black26, blurRadius: 4, offset: Offset(0, 2))
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(title,
+              style: const TextStyle(
+                  color: Color(0xFFD2A679),
+                  fontWeight: FontWeight.bold,
+                  fontSize: 14)),
+          const SizedBox(height: 12),
+          child,
+        ],
+      ),
     );
   }
 
@@ -221,10 +317,28 @@ class _JokiPageState extends State<JokiPage> {
     return InputDecoration(
       labelText: label,
       hintText: hint,
+      labelStyle: const TextStyle(color: Colors.white70),
+      hintStyle: const TextStyle(color: Colors.white38),
       border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
       filled: true,
-      fillColor: const Color.fromARGB(255, 7, 7, 7),
+      fillColor: const Color(0xFF2C2C2C),
+      enabledBorder: OutlineInputBorder(
+        borderSide: const BorderSide(color: Colors.white24),
+        borderRadius: BorderRadius.circular(8),
+      ),
+      focusedBorder: OutlineInputBorder(
+        borderSide: const BorderSide(color: Color(0xFFD2A679)),
+        borderRadius: BorderRadius.circular(8),
+      ),
       contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+    );
+  }
+
+  Widget _inputField(String label, String hint, TextEditingController controller) {
+    return TextField(
+      controller: controller,
+      style: const TextStyle(color: Colors.white),
+      decoration: _inputDecoration(label, hint),
     );
   }
 
@@ -242,12 +356,34 @@ class _JokiPageState extends State<JokiPage> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(product.name, style: TextStyle(color: isSelected ? Colors.black : Colors.white, fontSize: 14)),
+            Text(product.name,
+                style: TextStyle(
+                    color: isSelected ? Colors.black : Colors.white,
+                    fontSize: 14)),
             const SizedBox(height: 6),
-            Text(CurrencyFormatter.format(product.price),
-                style: TextStyle(color: isSelected ? Colors.black : const Color(0xFFD2A679), fontSize: 16, fontWeight: FontWeight.bold)),
+            Text(
+              CurrencyFormatter.format(product.price),
+              style: TextStyle(
+                color: isSelected ? Colors.black : const Color(0xFFD2A679),
+                fontSize: 16,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
           ],
         ),
+      ),
+    );
+  }
+
+  Widget _quantityButton(IconData icon, VoidCallback onPressed) {
+    return Container(
+      decoration: const BoxDecoration(
+        shape: BoxShape.circle,
+        color: Color(0xFFD2A679),
+      ),
+      child: IconButton(
+        onPressed: onPressed,
+        icon: Icon(icon, color: Colors.black),
       ),
     );
   }

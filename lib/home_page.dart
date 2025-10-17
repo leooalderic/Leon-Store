@@ -31,11 +31,11 @@ class HomePage extends StatelessWidget {
         backgroundColor: const Color.fromARGB(255, 30, 30, 30),
         title: Text(
           "Selamat datang, $email",
-          style: const TextStyle(color: Colors.white, fontSize: 16),
+          style: const TextStyle(color: Color.fromARGB(255, 210, 166, 121), fontSize: 16),
         ),
         actions: [
           IconButton(
-            icon: const Icon(Icons.logout, color: Colors.redAccent),
+            icon: const Icon(Icons.logout, color: Color.fromARGB(255, 210, 166, 121)),
             tooltip: 'Logout',
             onPressed: () => _logout(context),
           ),
@@ -75,7 +75,7 @@ class HomePage extends StatelessWidget {
                         Text(
                           "POPULER SEKARANG!",
                           style: TextStyle(
-                            color: Colors.white,
+                            color: Color.fromARGB(255, 210, 166, 121),
                             fontWeight: FontWeight.bold,
                             fontSize: 16,
                           ),
