@@ -2,6 +2,7 @@ import 'package:leon_flutter/data/freefire_product.dart';
 import 'package:leon_flutter/models/product.dart';
 import 'base_game_page.dart';
 
+
 class FreeFirePage extends BaseGamePage {
   const FreeFirePage({super.key});
 

@@ -2,6 +2,7 @@ import 'package:leon_flutter/data/pubg_product.dart';
 import 'package:leon_flutter/models/product.dart';
 import 'base_game_page.dart';
 
+
 class PubgPage extends BaseGamePage {
   const PubgPage({super.key});
 

@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:syncfusion_flutter_datepicker/datepicker.dart'; 
 import '../models/product.dart';
-import '../models/transaction.dart';
+import 'package:leon_flutter/models/transaction_history.dart';
 import '../data/joki_product.dart';
 import '../utils/currency_formatter.dart';
+import 'package:flutter_rating_bar/flutter_rating_bar.dart';
 
 class JokiPage extends StatefulWidget {
   const JokiPage({super.key});
@@ -15,8 +17,8 @@ class _JokiPageState extends State<JokiPage> {
   Product? selectedProduct;
   int quantity = 1;
   String? selectedPayment;
+  double userRating = 3.0;
 
-  // Input fields
   final TextEditingController nicknameController = TextEditingController();
   final TextEditingController serverController = TextEditingController();
   final TextEditingController jamMainController = TextEditingController();
@@ -35,7 +37,16 @@ class _JokiPageState extends State<JokiPage> {
   @override
   Widget build(BuildContext context) {
     final transaction = selectedProduct != null
-        ? Transaction(product: selectedProduct!, quantity: quantity)
+        ? GameTransaction(
+            product: selectedProduct!,
+            quantity: quantity,
+            date: DateTime.now(),
+            game: "Joki Penurun Rank",
+            userId: idController.text,
+            server: serverController.text,
+            payment: selectedPayment ?? "-",
+            rating: userRating,
+          )
         : null;
 
     return Scaffold(
@@ -64,11 +75,13 @@ class _JokiPageState extends State<JokiPage> {
                   Row(
                     children: [
                       Expanded(
-                        child: _inputField("Nickname", "Masukkan Nickname", nicknameController),
+                        child: _inputField(
+                            "Nickname", "Masukkan Nickname", nicknameController),
                       ),
                       const SizedBox(width: 12),
                       Expanded(
-                        child: _inputField("Server", "Masukkan Server", serverController),
+                        child: _inputField(
+                            "Server", "Masukkan Server", serverController),
                       ),
                     ],
                   ),
@@ -76,7 +89,8 @@ class _JokiPageState extends State<JokiPage> {
                   Row(
                     children: [
                       Expanded(
-                        child: _inputField("Jam Main", "Masukkan Jam Main", jamMainController),
+                        child: _inputField(
+                            "Jam Main", "Masukkan Jam Main", jamMainController),
                       ),
                       const SizedBox(width: 12),
                       Expanded(
@@ -88,11 +102,20 @@ class _JokiPageState extends State<JokiPage> {
                   Row(
                     children: [
                       Expanded(
-                        child: _inputField("Tanggal Main", "Masukkan Tanggal", tanggalMainController),
+                        child: GestureDetector(
+                          onTap: () {
+                            _showDatePickerDialog();
+                          },
+                          child: AbsorbPointer(
+                            child: _inputField("Tanggal Main", "Pilih Tanggal",
+                                tanggalMainController),
+                          ),
+                        ),
                       ),
                       const SizedBox(width: 12),
                       Expanded(
-                        child: _inputField("Role", "Roamer/Explane/dll", roleController),
+                        child:
+                            _inputField("Role", "Roamer/Explane/dll", roleController),
                       ),
                     ],
                   ),
@@ -125,7 +148,8 @@ class _JokiPageState extends State<JokiPage> {
                     padding: const EdgeInsets.symmetric(horizontal: 16),
                     child: Text(
                       "$quantity",
-                      style: const TextStyle(color: Colors.white, fontSize: 18),
+                      style:
+                          const TextStyle(color: Colors.white, fontSize: 18),
                     ),
                   ),
                   _quantityButton(Icons.add, () => setState(() => quantity++)),
@@ -139,9 +163,10 @@ class _JokiPageState extends State<JokiPage> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text("Produk : ${selectedProduct?.name ?? '-'}",
+                  Text("Produk  : ${selectedProduct?.name ?? '-'}",
                       style: const TextStyle(color: Colors.white70)),
-                  Text("Harga   : ${CurrencyFormatter.format(selectedProduct?.price ?? 0)}",
+                  Text(
+                      "Harga    : ${CurrencyFormatter.format(selectedProduct?.price ?? 0)}",
                       style: const TextStyle(color: Colors.white70)),
                   Text("Jumlah  : $quantity",
                       style: const TextStyle(color: Colors.white70)),
@@ -167,7 +192,8 @@ class _JokiPageState extends State<JokiPage> {
                 items: paymentMethods.map((method) {
                   return DropdownMenuItem(
                     value: method,
-                    child: Text(method, style: const TextStyle(color: Colors.white)),
+                    child: Text(method,
+                        style: const TextStyle(color: Colors.white)),
                   );
                 }).toList(),
                 onChanged: (value) => setState(() => selectedPayment = value),
@@ -189,6 +215,29 @@ class _JokiPageState extends State<JokiPage> {
                 ),
               ),
             ),
+
+            const SizedBox(height: 16),
+            _sectionCard(
+              title: "Beri Rating",
+              child: Center(
+                child: RatingBar.builder(
+                  initialRating: 3,
+                  minRating: 1,
+                  direction: Axis.horizontal,
+                  allowHalfRating: true,
+                  itemCount: 5,
+                  itemPadding:
+                      const EdgeInsets.symmetric(horizontal: 4.0),
+                  itemBuilder: (context, _) =>
+                      const Icon(Icons.star, color: Colors.amber),
+                  onRatingUpdate: (rating) {
+                    setState(() => userRating = rating);
+                    print("Rating pengguna: $rating");
+                  },
+                ),
+              ),
+            ),
+
             const SizedBox(height: 24),
 
             SizedBox(
@@ -200,9 +249,10 @@ class _JokiPageState extends State<JokiPage> {
                   shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(12)),
                 ),
-                onPressed: transaction != null && selectedPayment != null
-                    ? () => _showConfirmationDialog(transaction)
-                    : null,
+                onPressed:
+                    transaction != null && selectedPayment != null
+                        ? () => _showConfirmationDialog(transaction)
+                        : null,
                 child: const Text(
                   "Pesan Sekarang!",
                   style: TextStyle(
@@ -216,13 +266,14 @@ class _JokiPageState extends State<JokiPage> {
     );
   }
 
-  void _showConfirmationDialog(Transaction transaction) {
+  void _showConfirmationDialog(GameTransaction transaction) {
     showDialog(
       context: context,
       builder: (context) {
         return AlertDialog(
           backgroundColor: const Color(0xFF1E1E1E),
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+          shape:
+              RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
           title: const Text(
             "Konfirmasi Pesanan",
             style: TextStyle(
@@ -238,8 +289,12 @@ class _JokiPageState extends State<JokiPage> {
               _confirmText("Jumlah", "${transaction.quantity}x"),
               _confirmText("Metode", selectedPayment ?? "-"),
               const Divider(color: Colors.white24),
-              _confirmText("Total", CurrencyFormatter.format(transaction.total),
+              _confirmText("Total",
+                  CurrencyFormatter.format(transaction.total),
                   isBold: true, color: const Color(0xFFD2A679)),
+              const SizedBox(height: 10),
+              _confirmText("Rating", "$userRating ⭐",
+                  color: Colors.white70),
               const SizedBox(height: 10),
               const Text(
                 "Pastikan data yang Anda masukkan sudah benar.",
@@ -250,7 +305,8 @@ class _JokiPageState extends State<JokiPage> {
           actions: [
             TextButton(
               onPressed: () => Navigator.pop(context),
-              child: const Text("Batal", style: TextStyle(color: Colors.white70)),
+              child:
+                  const Text("Batal", style: TextStyle(color: Colors.white70)),
             ),
             ElevatedButton(
               style: ElevatedButton.styleFrom(
@@ -258,16 +314,58 @@ class _JokiPageState extends State<JokiPage> {
                 shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(8)),
               ),
-              onPressed: () {
+              onPressed: () async {
                 Navigator.pop(context);
+                await saveTransaction(transaction);
                 ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(content: Text("Pesanan berhasil dikonfirmasi!")),
+                  const SnackBar(
+                      content: Text("Pesanan berhasil dikonfirmasi!")),
                 );
               },
-              child: const Text("Konfirmasi",
-                  style: TextStyle(color: Colors.white)),
+              child:
+                  const Text("Konfirmasi", style: TextStyle(color: Colors.white)),
             ),
           ],
+        );
+      },
+    );
+  }
+
+  void _showDatePickerDialog() {
+    showDialog(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          backgroundColor: const Color(0xFF1E1E1E),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(16),
+          ),
+          title: const Text(
+            "Pilih Tanggal Main",
+            style: TextStyle(
+              color: Color(0xFFD2A679),
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+          content: SizedBox(
+            height: 350,
+            width: 350,
+            child: SfDateRangePicker(
+              selectionMode: DateRangePickerSelectionMode.single,
+              backgroundColor: const Color(0xFF2C2C2C),
+              todayHighlightColor: const Color(0xFFD2A679),
+              selectionColor: const Color(0xFFD2A679),
+              onSelectionChanged: (DateRangePickerSelectionChangedArgs args) {
+                if (args.value is DateTime) {
+                  setState(() {
+                    tanggalMainController.text =
+                        "${args.value.day}/${args.value.month}/${args.value.year}";
+                  });
+                  Navigator.pop(context);
+                }
+              },
+            ),
+          ),
         );
       },
     );
@@ -330,11 +428,13 @@ class _JokiPageState extends State<JokiPage> {
         borderSide: const BorderSide(color: Color(0xFFD2A679)),
         borderRadius: BorderRadius.circular(8),
       ),
-      contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+      contentPadding:
+          const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
     );
   }
 
-  Widget _inputField(String label, String hint, TextEditingController controller) {
+  Widget _inputField(
+      String label, String hint, TextEditingController controller) {
     return TextField(
       controller: controller,
       style: const TextStyle(color: Colors.white),
@@ -364,7 +464,8 @@ class _JokiPageState extends State<JokiPage> {
             Text(
               CurrencyFormatter.format(product.price),
               style: TextStyle(
-                color: isSelected ? Colors.black : const Color(0xFFD2A679),
+                color:
+                    isSelected ? Colors.black : const Color(0xFFD2A679),
                 fontSize: 16,
                 fontWeight: FontWeight.bold,
               ),

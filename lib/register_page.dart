@@ -19,7 +19,6 @@ class _RegisterPageState extends State<RegisterPage> {
     String email = emailController.text.trim();
     String password = passwordController.text.trim();
 
-    // Validasi input
     if (email.isEmpty || password.isEmpty) {
       _showSnackBar("Isi semua kolom terlebih dahulu!", Colors.orange);
       return;
@@ -38,7 +37,7 @@ class _RegisterPageState extends State<RegisterPage> {
     setState(() => _isLoading = true);
 
     try {
-      // Registrasi ke Firebase Auth
+
       await FirebaseAuth.instance.createUserWithEmailAndPassword(
         email: email,
         password: password,
@@ -46,7 +45,6 @@ class _RegisterPageState extends State<RegisterPage> {
 
       _showSnackBar("Pendaftaran berhasil! Silakan masuk.", Colors.green);
 
-      // Setelah sukses daftar, pindah ke halaman login
       if (mounted) {
         Navigator.pushReplacement(
           context,
@@ -102,7 +100,6 @@ class _RegisterPageState extends State<RegisterPage> {
               ),
               const SizedBox(height: 30),
 
-              // Email
               const Align(
                 alignment: Alignment.centerLeft,
                 child: Text(
@@ -129,7 +126,6 @@ class _RegisterPageState extends State<RegisterPage> {
               ),
               const SizedBox(height: 20),
 
-              // Password
               const Align(
                 alignment: Alignment.centerLeft,
                 child: Text(
@@ -169,7 +165,6 @@ class _RegisterPageState extends State<RegisterPage> {
               ),
               const SizedBox(height: 30),
 
-              // Tombol daftar
               SizedBox(
                 width: double.infinity,
                 child: ElevatedButton.icon(
@@ -204,7 +199,6 @@ class _RegisterPageState extends State<RegisterPage> {
 
               const SizedBox(height: 20),
 
-              // Link ke login
               Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [

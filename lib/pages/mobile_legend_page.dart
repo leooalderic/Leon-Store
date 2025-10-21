@@ -2,6 +2,7 @@ import 'package:leon_flutter/data/ml_product.dart';
 import 'package:leon_flutter/models/product.dart';
 import 'base_game_page.dart';
 
+
 class MobileLegendsPage extends BaseGamePage {
   const MobileLegendsPage({super.key});
 

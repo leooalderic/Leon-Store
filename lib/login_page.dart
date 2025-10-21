@@ -28,7 +28,6 @@ class _LoginPageState extends State<LoginPage> {
     setState(() => _isLoading = true);
 
     try {
-      // 🔐 Login ke Firebase Auth
       await FirebaseAuth.instance.signInWithEmailAndPassword(
         email: email,
         password: password,
@@ -102,7 +101,6 @@ class _LoginPageState extends State<LoginPage> {
               ),
               const SizedBox(height: 30),
 
-              // Email Field
               const Align(
                 alignment: Alignment.centerLeft,
                 child: Text(
@@ -129,7 +127,6 @@ class _LoginPageState extends State<LoginPage> {
               ),
               const SizedBox(height: 20),
 
-              // Password Field
               const Align(
                 alignment: Alignment.centerLeft,
                 child: Text(
@@ -169,7 +166,6 @@ class _LoginPageState extends State<LoginPage> {
               ),
               const SizedBox(height: 30),
 
-              // Tombol Login
               SizedBox(
                 width: double.infinity,
                 child: ElevatedButton.icon(
@@ -199,7 +195,6 @@ class _LoginPageState extends State<LoginPage> {
               ),
               const SizedBox(height: 20),
 
-              // Pindah ke Register
               Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [

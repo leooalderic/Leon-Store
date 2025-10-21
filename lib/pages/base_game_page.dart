@@ -1,6 +1,8 @@
+import 'dart:convert';
 import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:leon_flutter/models/product.dart';
-import 'package:leon_flutter/models/transaction.dart';
+import 'package:leon_flutter/models/transaction_history.dart';
 import 'package:leon_flutter/utils/currency_helper.dart';
 import 'package:flutter_rating_bar/flutter_rating_bar.dart';
 
@@ -16,7 +18,7 @@ abstract class BaseGamePage extends StatefulWidget {
 }
 
 abstract class BaseGamePageState<T extends BaseGamePage> extends State<T> {
-  Transaction? currentTransaction;
+  GameTransaction? currentTransaction;
   int quantity = 1;
   double rating = 3;
   String? selectedPayment;
@@ -95,9 +97,15 @@ abstract class BaseGamePageState<T extends BaseGamePage> extends State<T> {
                       setState(() {
                         quantity--;
                         if (currentTransaction != null) {
-                          currentTransaction = Transaction(
+                          currentTransaction = GameTransaction(
                             product: currentTransaction!.product,
                             quantity: quantity,
+                            date: DateTime.now(),
+                            game: widget.gameTitle,
+                            userId: idController.text,
+                            server: serverController.text,
+                            payment: selectedPayment ?? "-",
+                            rating: rating,
                           );
                         }
                       });
@@ -114,9 +122,15 @@ abstract class BaseGamePageState<T extends BaseGamePage> extends State<T> {
                     setState(() {
                       quantity++;
                       if (currentTransaction != null) {
-                        currentTransaction = Transaction(
+                        currentTransaction = GameTransaction(
                           product: currentTransaction!.product,
                           quantity: quantity,
+                          date: DateTime.now(),
+                          game: widget.gameTitle,
+                          userId: idController.text,
+                          server: serverController.text,
+                          payment: selectedPayment ?? "-",
+                          rating: rating,
                         );
                       }
                     });
@@ -158,8 +172,8 @@ abstract class BaseGamePageState<T extends BaseGamePage> extends State<T> {
                 items: paymentMethods.map((method) {
                   return DropdownMenuItem(
                     value: method,
-                    child:
-                        Text(method, style: const TextStyle(color: Colors.white)),
+                    child: Text(method,
+                        style: const TextStyle(color: Colors.white)),
                   );
                 }).toList(),
                 onChanged: (value) {
@@ -189,7 +203,6 @@ abstract class BaseGamePageState<T extends BaseGamePage> extends State<T> {
                   initialRating: rating,
                   minRating: 1,
                   allowHalfRating: true,
-                  itemSize: 30,
                   itemPadding: const EdgeInsets.symmetric(horizontal: 4),
                   unratedColor: Colors.white24,
                   itemBuilder: (context, _) =>
@@ -222,6 +235,14 @@ abstract class BaseGamePageState<T extends BaseGamePage> extends State<T> {
         ),
       ),
     );
+  }
+
+  Future<void> _saveTransaction(GameTransaction transaction) async {
+    final prefs = await SharedPreferences.getInstance();
+    final data = prefs.getStringList('transactions') ?? [];
+    final cleaned = data.where((e) => e != 'null' && e.isNotEmpty).toList();
+    cleaned.add(jsonEncode(transaction.toJson()));
+    await prefs.setStringList('transactions', cleaned);
   }
 
   void _confirmOrder() {
@@ -264,7 +285,7 @@ abstract class BaseGamePageState<T extends BaseGamePage> extends State<T> {
           ),
           content: Column(
             mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start, // 🔹 rata kiri semua
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               _buildConfirmRow('Game', widget.gameTitle),
               _buildConfirmRow('ID', idController.text),
@@ -273,21 +294,12 @@ abstract class BaseGamePageState<T extends BaseGamePage> extends State<T> {
               _buildConfirmRow('Jumlah', quantity.toString()),
               _buildConfirmRow('Metode', selectedPayment!),
               const Divider(color: Colors.white24),
-              Padding(
-                padding: const EdgeInsets.only(top: 4),
-                child: Text(
-                  'Total: ${CurrencyHelper.formatRupiah(total)}',
-                  style: const TextStyle(
+              Text(
+                'Total: ${CurrencyHelper.formatRupiah(total)}',
+                style: const TextStyle(
                     color: Color(0xFFD2A679),
                     fontWeight: FontWeight.bold,
-                    fontSize: 16,
-                  ),
-                ),
-              ),
-              const SizedBox(height: 8),
-              const Text(
-                'Pastikan data yang Anda masukkan sudah benar.',
-                style: TextStyle(color: Colors.white54, fontSize: 12),
+                    fontSize: 16),
               ),
             ],
           ),
@@ -295,31 +307,36 @@ abstract class BaseGamePageState<T extends BaseGamePage> extends State<T> {
           actions: [
             TextButton(
               onPressed: () => Navigator.pop(context),
-              child: const Text(
-                'Batal',
-                style: TextStyle(color: Colors.white70),
-              ),
+              child: const Text('Batal',
+                  style: TextStyle(color: Colors.white70)),
             ),
             ElevatedButton(
               style: ElevatedButton.styleFrom(
                 backgroundColor: const Color(0xFFD2A679),
                 shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(10),
-                ),
+                    borderRadius: BorderRadius.circular(10)),
               ),
-              onPressed: () {
+              onPressed: () async {
                 Navigator.pop(context);
+                await _saveTransaction(GameTransaction(
+                  product: currentTransaction!.product,
+                  quantity: quantity,
+                  date: DateTime.now(),
+                  userId: idController.text,
+                  server: serverController.text,
+                  game: widget.gameTitle,
+                  payment: selectedPayment!,
+                  rating: rating,
+                ));
                 ScaffoldMessenger.of(context).showSnackBar(
                   const SnackBar(
-                    content: Text('Pesanan berhasil dikonfirmasi!'),
+                    content: Text('Pesanan berhasil disimpan ke riwayat!'),
                     backgroundColor: Color(0xFFD2A679),
                   ),
                 );
               },
-              child: const Text(
-                'Konfirmasi',
-                style: TextStyle(color: Colors.black),
-              ),
+              child:
+                  const Text('Konfirmasi', style: TextStyle(color: Colors.black)),
             ),
           ],
         );
@@ -334,7 +351,7 @@ abstract class BaseGamePageState<T extends BaseGamePage> extends State<T> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           SizedBox(
-            width: 60,
+            width: 70,
             child: Text(
               '$label:',
               style: const TextStyle(
@@ -342,11 +359,7 @@ abstract class BaseGamePageState<T extends BaseGamePage> extends State<T> {
             ),
           ),
           Expanded(
-            child: Text(
-              value,
-              style: const TextStyle(color: Colors.white),
-              textAlign: TextAlign.left, // ✅ fix rata kiri
-            ),
+            child: Text(value, style: const TextStyle(color: Colors.white)),
           ),
         ],
       ),
@@ -412,9 +425,15 @@ abstract class BaseGamePageState<T extends BaseGamePage> extends State<T> {
     return GestureDetector(
       onTap: () {
         setState(() {
-          currentTransaction = Transaction(
+          currentTransaction = GameTransaction(
             product: product,
             quantity: quantity,
+            date: DateTime.now(),
+            game: widget.gameTitle,
+            userId: idController.text,
+            server: serverController.text,
+            payment: selectedPayment ?? "-",
+            rating: rating,
           );
         });
       },
@@ -438,7 +457,8 @@ abstract class BaseGamePageState<T extends BaseGamePage> extends State<T> {
             Text(
               CurrencyHelper.formatRupiah(product.price),
               style: TextStyle(
-                color: isSelected ? Colors.black : const Color(0xFFD2A679),
+                color:
+                    isSelected ? Colors.black : const Color(0xFFD2A679),
                 fontSize: screenWidth < 400 ? 14 : 16,
                 fontWeight: FontWeight.bold,
               ),
